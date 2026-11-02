@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kuis Tic Tac Toe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#EEEAFF;--card:#FFFFFF;--ink:#26144F;--muted:#6A5C93;--line:#D5CCF2;
+  --sun:#FFC72C;--sun-ink:#2B1B00;--ok:#1E8A4C;--bad:#D0293F;--neu:#4B3A8C;
+  --t0:#E8384F;--t1:#1F6FDB;--t2:#F2A900;--cx:#D62A44;--co:#1F6FDB;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--bg:#1D1148;--card:#2B1D63;--ink:#F4F0FF;--muted:#B9ADE3;--line:#43348A;--ok:#2E9E5E;--bad:#D9364C;--neu:#5A47A8;--cx:#FF6B7F;--co:#6EA8FF;}}
+:root[data-theme="dark"]{
+  color-scheme:dark;--bg:#1D1148;--card:#2B1D63;--ink:#F4F0FF;--muted:#B9ADE3;--line:#43348A;--ok:#2E9E5E;--bad:#D9364C;--neu:#5A47A8;--cx:#FF6B7F;--co:#6EA8FF;}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 18px/1.4 "Fredoka",system-ui,-apple-system,"Segoe UI",sans-serif}
+#app{min-height:100%;max-width:980px;margin:0 auto;padding:18px;display:flex;flex-direction:column;justify-content:center}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0}
+button:focus-visible,input:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+h1{font-size:clamp(34px,8vw,60px);line-height:1;margin:0 0 10px;font-weight:700;text-align:center}
+.center{text-align:center}.muted{color:var(--muted)}
+.sun{width:96px;height:96px;border-radius:50%;background:var(--sun);margin:0 auto 30px;box-shadow:0 0 0 12px color-mix(in srgb,var(--sun) 28%,transparent),0 0 0 26px color-mix(in srgb,var(--sun) 12%,transparent)}
+.rise{animation:rise .8s cubic-bezier(.2,.9,.3,1) both}
+@keyframes rise{from{transform:translateY(50px);opacity:0}to{transform:none;opacity:1}}
+.menu{display:flex;flex-direction:column;gap:12px;max-width:360px;margin:22px auto 0;width:100%}
+.row{display:flex;gap:10px}
+input{width:100%;padding:13px 15px;border-radius:12px;border:2px solid var(--line);background:var(--card);text-align:center}
+.btn{padding:14px 20px;border-radius:12px;font-weight:700;font-size:20px;box-shadow:0 5px 0 rgba(0,0,0,.28);transition:transform .08s,box-shadow .08s;white-space:nowrap}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.28)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.main{background:var(--sun);color:var(--sun-ink)}
+.btn.alt{background:var(--card);border:2px solid var(--line)}
+.hint{margin-top:18px;font-size:15px}
+.code{font-size:clamp(56px,16vw,96px);font-weight:700;letter-spacing:.12em;line-height:1;margin:10px 0}
+.top{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:99px;padding:3px 14px;font-weight:600;font-size:16px}
+.chip.cx{border-color:var(--cx)}.chip.co{border-color:var(--co)}
+.timer{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin-bottom:14px}
+.timer i{display:block;height:100%;background:var(--sun);transform-origin:left;transform:scaleX(0)}
+.timer.low i{background:var(--bad)}
+.banner{border-radius:14px;padding:12px 16px;text-align:center;font-weight:600;font-size:20px;color:#fff;background:var(--neu);margin-bottom:14px}
+.banner.ok{background:var(--ok)}.banner.bad{background:var(--bad)}
+.game{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start}
+.q{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:18px;text-align:center;font-size:clamp(19px,3.6vw,26px);font-weight:600;line-height:1.25;margin-bottom:12px;min-height:90px;display:flex;align-items:center;justify-content:center}
+.tiles{display:grid;gap:10px}
+.tile{display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;border-radius:14px;color:#fff;font-weight:600;font-size:clamp(16px,3vw,20px);line-height:1.2;box-shadow:0 5px 0 rgba(0,0,0,.28);transition:transform .08s,opacity .2s}
+.tile:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.28)}
+.tile svg{width:28px;height:28px;fill:#fff;flex:none}
+.tile b{opacity:.9}
+.t0{background:var(--t0)}.t1{background:var(--t1)}.t2{background:var(--t2);color:#2B1B00}.t2 svg{fill:#2B1B00}
+.tile:disabled{cursor:default}
+.tile.dim{opacity:.35;box-shadow:none}
+.tile.right{outline:5px solid var(--ok);outline-offset:3px}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:360px;width:100%;margin:0 auto}
+.cell{aspect-ratio:1;border-radius:14px;background:var(--card);border:2px solid var(--line);font-size:clamp(44px,12vw,72px);font-weight:700;line-height:1;display:grid;place-items:center;padding:0}
+.cell:disabled{cursor:default}
+.cell:not(:disabled){border-color:var(--sun);box-shadow:0 0 0 3px color-mix(in srgb,var(--sun) 40%,transparent);animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(.96)}}
+.cell.cx{color:var(--cx)}.cell.co{color:var(--co)}
+.cell.win{background:var(--sun);color:var(--sun-ink);border-color:var(--sun)}
+.cell i{font-style:normal;font-size:.35em;color:var(--muted)}
+.endbtn{display:flex;gap:10px;justify-content:center;margin:0 0 14px}
+@media(max-width:720px){.game{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+const Q=[
+ {t:"Apa manfaat utama bangun pagi?",o:["Membuat tubuh malas","Melatih kedisiplinan","Membuat terlambat sekolah"],k:1},
+ {t:"Pukul berapa sebaiknya kita bangun pagi?",o:["04.00-05.00","10.00-11.00","12.00-13.00"],k:0},
+ {t:"Apa yang sebaiknya dilakukan setelah bangun tidur?",o:["Tidur kembali","Bermain HP","Merapikan tempat tidur"],k:2},
+ {t:"Mengapa bangun pagi penting bagi pelajar?",o:["Agar tidak perlu belajar","Agar tidak terlambat sekolah","Agar bisa bermain sepanjang hari"],k:1},
+ {t:"Apa akibat jika sering bangun kesiangan?",o:["Lebih disiplin","Selalu tepat waktu","Terburu-buru dan terlambat"],k:2},
+ {t:"Mengapa sarapan penting setelah bangun pagi?",o:["Agar punya energi beraktivitas","Agar cepat mengantuk","Agar badan lemas"],k:0},
+ {t:"Apa yang membantu kita bangun lebih pagi?",o:["Tidur larut malam","Tidur lebih awal","Begadang bermain HP"],k:1},
+ {t:"Apa yang baik dilakukan pagi hari agar tubuh bugar?",o:["Langsung rebahan lagi","Melewatkan sarapan","Berolahraga ringan"],k:2},
+ {t:"Alat yang membantu kita terbangun tepat waktu adalah...",o:["Bantal","Alarm","Selimut"],k:1}
+];
+const LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const L="ABC";
+const SHAPE=[
+ '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 30 28H2z"/></svg>',
+ '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 1 31 16 16 31 1 16z"/></svg>',
+ '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13"/></svg>'
+];
+const $=i=>document.getElementById(i);
+const app=$("app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let R; // namespace room: undefined = memeriksa, null = tidak tersedia
+const S={name:"",mode:"menu",rm:null,subs:[],ts:[],iv:0,me:"X",host:true,opp:null,g:null,n:0,lastN:0,seenR:-1,qs:[],qp:0,dlh:0,t0:0,tk:"",info:"",kode:"",label:""};
+const getName=()=>(S.name||"").trim().slice(0,16)||"Pemain";
+const later=(f,ms)=>{S.ts.push(setTimeout(f,ms))};
+function clearAll(){S.ts.forEach(clearTimeout);S.ts=[];clearInterval(S.iv);S.iv=0}
+function leave(){
+  S.subs.forEach(u=>{try{u()}catch(e){}});S.subs=[];
+  if(S.rm){try{S.rm.leave().catch(()=>{})}catch(e){}S.rm=null}
+}
+const pres=p=>{if(S.rm){try{S.rm.presence(p).catch(()=>{})}catch(e){}}};
+
+/* ===== Menu & layar tunggu ===== */
+function menu(){
+  const n0=$("nm"),c0=$("cd");
+  if(n0)S.name=n0.value;
+  const cd=c0?c0.value:"";
+  if(S.mode!=="menu"){clearAll();leave();S.mode="menu";S.g=null}
+  const off=R?"":"disabled";
+  app.innerHTML='<div class="center"><div class="sun rise"></div><h1>KUIS TIC TAC TOE</h1>'+
+  '<p class="muted" style="margin:0 auto;max-width:44ch">Siapa yang menjawab benar paling dulu, dia yang menaruh token. Dapat 3 berurutan, menang!</p>'+
+  '<div class="menu"><input id="nm" maxlength="16" placeholder="Nama kamu" aria-label="Nama kamu" value="'+esc(S.name)+'">'+
+  '<button class="btn main" id="b1" '+off+'>Cari lawan online</button>'+
+  '<button class="btn alt" id="b2" '+off+'>Buat ruangan</button>'+
+  '<div class="row"><input id="cd" maxlength="4" placeholder="Kode ruangan" aria-label="Kode ruangan" value="'+esc(cd)+'" '+off+'><button class="btn alt" id="b3" '+off+'>Gabung</button></div>'+
+  '<button class="btn alt" id="b4">Lawan bot</button><button class="btn alt" id="b5">Keluar</button></div>'+
+  '<p class="muted hint" id="ht">'+(R===undefined?"Memeriksa koneksi online…":R?"Main online butuh 2 perangkat yang membuka halaman ini.":"Mode online tidak tersedia di tampilan ini. Kamu tetap bisa lawan bot.")+'</p></div>';
+  $("nm").oninput=e=>{S.name=e.target.value};
+  $("b1").onclick=()=>sambung("cepat","cepat");
+  $("b2").onclick=()=>{const c="abcdefghjkmnpqrstuvwxyz23456789";let k="";for(let i=0;i<4;i++)k+=c[Math.floor(Math.random()*c.length)];sambung(k,"buat")};
+  $("b3").onclick=()=>{const k=$("cd").value.trim().toLowerCase();if(!/^[a-z0-9]{4}$/.test(k)){$("ht").textContent="Kode ruangan terdiri dari 4 huruf atau angka.";return}sambung(k,"gabung")};
+  $("b4").onclick=()=>startBot("");
+  $("b5").onclick=()=>{clearAll();leave();app.innerHTML='<div class="center"><div class="sun"></div><h1>Selesai. Terima kasih!</h1><div class="menu"><button class="btn alt" id="kb">Kembali ke menu</button></div></div>';$("kb").onclick=menu};
+}
+function waitView(){
+  let h='<div class="center"><div class="sun rise"></div>';
+  if(S.label==="cepat")h+='<h1>Mencari lawan…</h1><p class="muted">Kalau tidak ada pemain online, kamu otomatis main melawan bot dalam 8 detik.</p>';
+  else if(S.label==="buat")h+='<h1>Kode ruangan</h1><div class="code">'+esc(S.kode.toUpperCase())+'</div><p class="muted">Minta temanmu memilih Gabung lalu memasukkan kode ini.</p>';
+  else h+='<h1>Masuk ruangan '+esc(S.kode.toUpperCase())+'</h1><p class="muted">Menunggu lawan di ruangan ini…</p>';
+  h+='<div class="menu">'+(S.label==="buat"?'<button class="btn main" id="wb">Main lawan bot saja</button>':'')+'<button class="btn alt" id="wc">Batal</button></div></div>';
+  app.innerHTML=h;
+  $("wc").onclick=()=>{S.mode="x";menu()};
+  if($("wb"))$("wb").onclick=()=>startBot("");
+}
+async function sambung(kode,label){
+  S.mode="wait";S.kode=kode;S.label=label;waitView();
+  let rm=null;
+  try{rm=await R.join("kuis-"+kode)}catch(e){}
+  if(S.mode!=="wait"||S.kode!==kode){if(rm)rm.leave().catch(()=>{});return}
+  if(!rm){app.innerHTML='<div class="center"><div class="sun"></div><h1>Gagal terhubung</h1><div class="menu"><button class="btn alt" id="kb">Kembali ke menu</button></div></div>';$("kb").onclick=()=>{S.mode="x";menu()};return}
+  S.rm=rm;S.subs.push(rm.onPeers(onPeers));
+  pres({st:"wait",nm:getName(),pair:null,a:null,g:null});
+  if(label==="cepat")later(()=>{if(S.mode==="wait")startBot("Tidak ada pemain online, kamu melawan bot.")},8000);
+}
+
+/* ===== Penghubung online ===== */
+function onPeers(){
+  const rm=S.rm;if(!rm)return;
+  const ps=rm.peers().filter(p=>p.kind==="viewer"&&(!p.isMe||p.sameTab));
+  const me=ps.find(p=>p.isMe);
+  if(S.mode==="wait"){
+    if(!me)return;
+    const h=ps.find(p=>!p.isMe&&p.presence.st==="play"&&p.presence.pair===me.peer);
+    if(h){startGuest(h);return}
+    const w=ps.filter(p=>p.presence.st==="wait").sort((a,b)=>a.peer<b.peer?-1:1);
+    if(w.length>=2&&w[0].isMe)startHost(w[1]);
+    return;
+  }
+  if(S.mode!=="online")return;
+  const o=ps.find(p=>p.peer===S.opp);
+  if(!o){lawanKeluar();return}
+  if(S.host){
+    const a=o.presence.a;
+    if(a&&a.n!==S.lastN){S.lastN=a.n;aksi("O",a)}
+    const on=String(o.presence.nm||"Lawan").slice(0,16);
+    if(S.g&&S.g.nm.O!==on)upd({nm:{X:S.g.nm.X,O:on}});
+  }else{
+    const g=o.presence.g;
+    if(g&&g.r!==S.seenR){S.seenR=g.r;S.g=g;render()}
+  }
+}
+function startHost(o){
+  clearAll();S.mode="online";S.me="X";S.host=true;S.opp=o.peer;S.n=0;S.lastN=0;S.g=null;
+  pres({st:"play",pair:o.peer,a:null,g:null,nm:getName()});
+  newGame(getName(),String(o.presence.nm||"Lawan").slice(0,16));
+  S.iv=setInterval(loop,100);
+}
+function startGuest(h){
+  clearAll();S.mode="online";S.me="O";S.host=false;S.opp=h.peer;S.n=0;S.seenR=-1;S.g=null;
+  pres({st:"play",pair:null,a:null,g:null,nm:getName()});
+  app.innerHTML='<div class="center"><div class="sun rise"></div><h1>Lawan ditemukan!</h1><p class="muted">Menunggu permainan dimulai…</p></div>';
+  S.iv=setInterval(loop,100);
+  onPeers();
+}
+function lawanKeluar(){
+  clearAll();leave();S.mode="over";
+  app.innerHTML='<div class="center"><div class="sun"></div><h1>Lawan keluar</h1><p class="muted">Pemain lain meninggalkan permainan.</p><div class="menu"><button class="btn main" id="ob">Lawan bot</button><button class="btn alt" id="om">Menu</button></div></div>';
+  $("ob").onclick=()=>startBot("");$("om").onclick=()=>{S.mode="x";menu()};
+}
+function startBot(info){
+  clearAll();leave();S.mode="bot";S.me="X";S.host=true;S.g=null;S.info=info;
+  newGame(getName(),"Bot");
+  S.iv=setInterval(loop,100);
+}
+function kirim(k,v){
+  if(S.host)aksi(S.me,{k,v});
+  else pres({a:{n:++S.n,k,v}});
+}
+
+/* ===== Mesin permainan (hanya dijalankan host / mode bot) ===== */
+const nama=s=>S.g.nm[s];
+function pub(){S.g.r++;if(S.mode==="online")pres({g:S.g});render()}
+function upd(p){Object.assign(S.g,p);pub()}
+function newGame(nx,no){
+  const old=S.g;S.ts.forEach(clearTimeout);S.ts=[];
+  S.g={r:old?old.r:0,ph:"q",b:".........",sc:old?old.sc:{X:0,O:0,D:0},nm:old?old.nm:{X:nx,O:no},qi:0,lk:"",w:"",ck:-1,msg:"",dur:15,res:"",ln:[]};
+  S.qs=[];S.qp=0;S.tk="";
+  nextQ();
+}
+function nextQ(){
+  if(S.qp>=S.qs.length){S.qs=shuffle(Q.map((_,i)=>i));S.qp=0}
+  S.dlh=Date.now()+15000;
+  upd({ph:"q",qi:S.qs[S.qp++],lk:"",w:"",ck:-1,msg:S.info||"Jawab dengan benar dan tercepat!",dur:15});
+  S.info="";
+  botMikir();
+}
+function aksi(side,a){
+  const g=S.g;if(!g||!a)return;
+  const v=Number(a.v);
+  if(a.k==="ans"&&v>=0&&v<3)answer(side,v);
+  else if(a.k==="mv"&&Number.isInteger(v))place(side,v);
+  else if(a.k==="rm"&&g.ph==="end")newGame();
+}
+function answer(side,c){
+  const g=S.g;
+  if(g.ph!=="q"||g.lk.includes(side))return;
+  const k=Q[g.qi].k,lain=side==="X"?"O":"X";
+  if(c===k){
+    S.dlh=Date.now()+10000;
+    upd({ph:"pl",w:side,ck:k,dur:10,msg:nama(side)+" tercepat dan benar! Pilih satu kotak."});
+    botTaruh();
+  }else{
+    const lk=g.lk+side;
+    if(lk.length>=2){upd({lk,ph:"nx",ck:k,msg:"Dua-duanya salah. Tidak ada yang dapat kotak."});later(nextQ,1800)}
+    else upd({lk,msg:nama(side)+" salah. "+nama(lain)+" masih bisa menjawab!"});
+  }
+}
+function place(side,i){
+  const g=S.g;
+  if(g.ph!=="pl"||g.w!==side||!(i>=0&&i<9)||g.b[i]!==".")return;
+  const b=g.b.slice(0,i)+side+g.b.slice(i+1);
+  const ln=LINES.find(l=>l.every(j=>b[j]===side));
+  const sc={...g.sc};
+  if(ln){sc[side]++;upd({b,ph:"end",res:side,ln,sc,msg:nama(side)+" menang!"});return}
+  if(!b.includes(".")){sc.D++;upd({b,ph:"end",res:"D",ln:[],sc,msg:"Papan penuh. Hasilnya seri!"});return}
+  upd({b,ph:"nx",msg:nama(side)+" menaruh token."});
+  later(nextQ,1300);
+}
+function loop(){
+  const g=S.g;
+  if(S.host&&g&&(g.ph==="q"||g.ph==="pl")&&Date.now()>S.dlh){
+    upd({ph:"nx",ck:Q[g.qi].k,msg:g.ph==="q"?"Waktu habis. Tidak ada yang dapat kotak.":"Waktu habis. Kotaknya hangus."});
+    later(nextQ,1800);
+  }
+  const tb=$("tb");
+  if(tb&&g){
+    const f=(g.ph==="q"||g.ph==="pl")?Math.max(0,1-(Date.now()-S.t0)/(g.dur*1000)):0;
+    tb.style.transform="scaleX("+f+")";
+    $("tm").className="timer"+(f<.25&&f>0?" low":"");
+  }
+}
+
+/* ===== Bot ===== */
+function botMikir(){
+  if(S.mode!=="bot")return;
+  const qi=S.g.qi;
+  later(()=>{
+    const g=S.g;
+    if(g.ph!=="q"||g.qi!==qi||g.lk.includes("O"))return;
+    const k=Q[qi].k;let c=k;
+    if(Math.random()>0.6){const w=[0,1,2].filter(x=>x!==k);c=w[Math.floor(Math.random()*2)]}
+    answer("O",c);
+  },2200+Math.random()*4500);
+}
+function botTaruh(){
+  if(S.mode!=="bot"||S.g.w!=="O")return;
+  later(()=>place("O",aiCell()),900+Math.random()*800);
+}
+function aiCell(){
+  const b=S.g.b,kosong=[...b].map((c,i)=>c==="."?i:-1).filter(i=>i>=0);
+  const cek=s=>kosong.find(i=>LINES.some(l=>l.includes(i)&&l.every(j=>j===i||b[j]===s)));
+  const w=cek("O");if(w!==undefined)return w;
+  const x=cek("X");if(x!==undefined)return x;
+  if(b[4]===".")return 4;
+  const sd=[0,2,6,8].filter(i=>b[i]===".");
+  if(sd.length)return sd[Math.floor(Math.random()*sd.length)];
+  return kosong[Math.floor(Math.random()*kosong.length)];
+}
+
+/* ===== Tampilan permainan ===== */
+function render(){
+  const g=S.g;if(!g)return;
+  const me=S.me,reveal=g.ph!=="q",myTurn=g.ph==="pl"&&g.w===me;
+  const key=g.ph+"|"+g.qi+"|"+g.w;
+  if(key!==S.tk){S.tk=key;S.t0=Date.now()}
+  const q=Q[g.qi],nm=g.nm;
+  const chip=(s,c)=>'<span class="chip '+c+'">'+s+' '+esc(nm[s])+(me===s?" (kamu)":"")+' · '+g.sc[s]+'</span>';
+  let ban=g.msg,bc="";
+  if(g.ph==="end"){bc=g.res===me?"ok":g.res==="D"?"":"bad";ban=g.res==="D"?g.msg:g.res===me?"Kamu menang! "+g.msg:"Kamu kalah. "+g.msg}
+  else if(myTurn)ban="Giliranmu! Pilih satu kotak di papan.";
+  else if(g.ph==="pl")ban=nama(g.w)+" sedang memilih kotak…";
+  const tiles=q.o.map((o,j)=>{
+    const dis=g.ph!=="q"||g.lk.includes(me);
+    const cl="tile t"+j+(reveal?(j===g.ck?" right":" dim"):(g.lk.includes(me)?" dim":""));
+    return '<button class="'+cl+'" data-j="'+j+'" '+(dis?"disabled":"")+'>'+SHAPE[j]+'<span><b>'+L[j]+'.</b> '+esc(o)+'</span></button>';
+  }).join("");
+  const cells=[...g.b].map((c,i)=>{
+    const on=myTurn&&c===".";
+    return '<button class="cell '+(c==="X"?"cx":c==="O"?"co":"")+(g.ln.includes(i)?" win":"")+'" data-i="'+i+'" '+(on?"":"disabled")+' aria-label="Kotak '+(i+1)+'">'+(c==="."?(on?"<i>"+(i+1)+"</i>":""):c)+'</button>';
+  }).join("");
+  app.innerHTML='<div class="top">'+chip("X","cx")+chip("O","co")+'<span class="chip">Seri · '+g.sc.D+'</span></div>'+
+   '<div class="timer" id="tm"><i id="tb"></i></div><div class="banner '+bc+'" aria-live="polite">'+esc(ban)+'</div>'+
+   (g.ph==="end"?'<div class="endbtn"><button class="btn main" id="rm">Main lagi</button><button class="btn alt" id="mn">Menu</button></div>':'')+
+   '<div class="game"><div><div class="q" id="qt"></div><div class="tiles">'+tiles+'</div></div><div class="board">'+cells+'</div></div>';
+  $("qt").textContent=q.t;
+  document.querySelectorAll(".tile").forEach(b=>b.onclick=()=>kirim("ans",+b.dataset.j));
+  document.querySelectorAll(".cell").forEach(b=>b.onclick=()=>kirim("mv",+b.dataset.i));
+  if($("rm"))$("rm").onclick=()=>kirim("rm",0);
+  if($("mn"))$("mn").onclick=()=>{S.mode="x";menu()};
+}
+document.addEventListener("keydown",e=>{
+  const g=S.g;if(!g||(S.mode!=="online"&&S.mode!=="bot")||e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=e.key.toUpperCase();
+  if(g.ph==="q"&&!g.lk.includes(S.me)){let j="ABC".indexOf(k);if(j<0)j="123".indexOf(k);if(j>=0)kirim("ans",j)}
+  else if(g.ph==="pl"&&g.w===S.me&&/^[1-9]$/.test(k))kirim("mv",+k-1);
+});
+
+menu();
+(async()=>{
+  R=undefined;
+  try{R=window.claude&&window.claude.use?await window.claude.use("room"):null}catch(e){R=null}
+  if(!R)R=null;
+  if(S.mode==="menu")menu();
+})();
+</script>
+</body>
+</html>
