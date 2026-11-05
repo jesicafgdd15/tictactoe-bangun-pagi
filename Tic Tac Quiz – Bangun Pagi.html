@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tic Tac Quiz – Bangun Pagi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#EEEAFF;--card:#FFFFFF;--ink:#26144F;--muted:#6A5C93;--line:#D5CCF2;
+  --sun:#FFC72C;--sun-ink:#2B1B00;--ok:#1E8A4C;--bad:#D0293F;
+  --x:#D0293F;--o:#1F6FDB;--xm:#D0293F;--om:#1F6FDB;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--bg:#1D1148;--card:#2B1D63;--ink:#F4F0FF;--muted:#B9ADE3;--line:#43348A;--bad:#FF6B7F;--xm:#FF7A8B;--om:#7BB2FF;}}
+:root[data-theme="dark"]{
+  color-scheme:dark;--bg:#1D1148;--card:#2B1D63;--ink:#F4F0FF;--muted:#B9ADE3;--line:#43348A;--bad:#FF6B7F;--xm:#FF7A8B;--om:#7BB2FF;}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 17px/1.4 "Fredoka",system-ui,-apple-system,"Segoe UI",sans-serif}
+#app{min-height:100%;max-width:900px;margin:0 auto;padding:16px 20px 28px;display:flex;flex-direction:column;justify-content:center}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+h1{font-size:clamp(40px,10vw,72px);line-height:1;margin:0;font-weight:700;text-align:center}
+h2{margin:0 0 14px;font-size:30px}
+.center{text-align:center}.muted{color:var(--muted)}
+.sun{width:96px;height:96px;border-radius:50%;background:var(--sun);margin:0 auto 32px;box-shadow:0 0 0 12px color-mix(in srgb,var(--sun) 28%,transparent),0 0 0 26px color-mix(in srgb,var(--sun) 12%,transparent)}
+.rise{animation:rise .8s cubic-bezier(.2,.9,.3,1) both}
+@keyframes rise{from{transform:translateY(50px);opacity:0}to{transform:none;opacity:1}}
+.menu{display:flex;flex-direction:column;gap:12px;max-width:360px;margin:26px auto 0;width:100%}
+.btn{padding:14px 20px;border-radius:12px;font-weight:700;font-size:21px;box-shadow:0 5px 0 rgba(0,0,0,.28);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.28)}
+.btn.main{background:var(--sun);color:var(--sun-ink)}
+.btn.alt{background:var(--card);border:2px solid var(--line);color:var(--ink)}
+.btn.stop{background:var(--bad);color:#fff}
+.lvl{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:15px}
+.lvl button{padding:6px 14px;border-radius:99px;background:var(--card);border:2px solid var(--line);font-weight:600}
+.lvl button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:99px;padding:4px 16px;font-weight:600}
+.mbtn{display:flex;align-items:center;gap:9px;min-height:44px;padding:6px 16px;border-radius:12px;background:var(--ink);color:var(--bg);font-weight:700}
+.bars,.bars:before,.bars:after{display:block;width:18px;height:3px;border-radius:2px;background:currentColor;content:"";position:relative}
+.bars:before{position:absolute;top:-6px}.bars:after{position:absolute;top:6px}
+.bars{position:relative}
+.timer{height:12px;border-radius:6px;background:var(--line);overflow:hidden;margin-bottom:14px}
+.timer i{display:block;height:100%;background:var(--sun);transform-origin:left}
+.timer.low i{background:var(--bad)}
+.q{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:20px;text-align:center;font-size:clamp(20px,4.2vw,28px);font-weight:600;line-height:1.25;margin-bottom:16px;min-height:96px;display:flex;align-items:center;justify-content:center}
+
+.play{display:grid;grid-template-columns:minmax(260px,330px) 1fr;gap:20px;align-items:start}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:330px;margin:0 auto}
+.cell{aspect-ratio:1;border-radius:12px;background:var(--card);border:2px solid var(--line);font-size:clamp(40px,10vw,58px);font-weight:700;line-height:1}
+.cell:disabled{cursor:default;opacity:1;-webkit-text-fill-color:currentColor}
+.cell.X{color:var(--xm)}.cell.O{color:var(--om)}
+.cell.can{border-color:var(--sun);border-width:3px;animation:pulse 1s ease-in-out infinite}
+.cell.can:hover{background:color-mix(in srgb,var(--sun) 30%,var(--card))}
+.cell.w{background:var(--sun);color:var(--sun-ink);border-color:var(--sun)}
+@keyframes pulse{50%{transform:scale(.95)}}
+.msg{margin:0 0 10px;color:var(--muted);text-align:center}
+.pans{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pan{background:var(--card);border:2px solid var(--line);border-top:6px solid var(--c);border-radius:12px;padding:10px}
+.pan.X{--c:var(--x)}.pan.O{--c:var(--o)}
+.pan h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.pan.lk h3{color:var(--muted)}
+.tk{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--c);color:#fff;font-size:14px}
+.ans{display:flex;align-items:center;gap:8px;width:100%;margin-top:8px;padding:10px;border-radius:10px;background:var(--c);color:#fff;text-align:left;font-size:15px;line-height:1.15;font-weight:600;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.ans:active:not(:disabled){transform:translateY(3px);box-shadow:none}
+.ans svg{width:18px;height:18px;fill:#fff;flex:none}
+.ans span{flex:1}
+.ans kbd{font:700 12px/1 "Fredoka",system-ui,sans-serif;background:rgba(255,255,255,.25);border-radius:5px;padding:4px 6px}
+.ans:disabled{opacity:.4;cursor:default;box-shadow:none}
+.ans[data-bad]{opacity:.9;outline:3px solid var(--bad);outline-offset:2px}
+.ban{border-radius:14px;padding:16px 18px;text-align:center;font-size:21px;color:#fff;animation:rise .35s ease-out both}
+.ban small{display:block;font-weight:500;font-size:16px;margin-top:2px}
+.ban.X{background:var(--x)}.ban.O{background:var(--o)}
+.ban.nb{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+
+#modal{position:fixed;inset:0;background:rgba(20,10,50,.72);display:grid;place-items:center;padding:20px;z-index:20}
+#modal[hidden]{display:none}
+.mc{background:var(--card);border-radius:18px;padding:24px;max-width:440px;width:100%;max-height:90vh;overflow:auto}
+.mc ol{margin:0 0 6px;padding-left:22px}.mc li{margin:7px 0}
+.mc .menu{margin-top:18px}
+
+@media(max-width:760px){
+  .play{grid-template-columns:1fr}
+  .side{order:-1}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal" hidden></div>
+<script>
+var Q=[
+ {t:"Apa manfaat utama bangun pagi?",o:["Membuat tubuh malas","Melatih kedisiplinan","Membuat terlambat sekolah"],k:1},
+ {t:"Pukul berapa sebaiknya kita bangun pagi?",o:["04.00-05.00","10.00-11.00","12.00-13.00"],k:0},
+ {t:"Apa yang sebaiknya dilakukan setelah bangun tidur?",o:["Tidur kembali","Bermain HP","Merapikan tempat tidur"],k:2},
+ {t:"Mengapa bangun pagi penting bagi pelajar?",o:["Agar tidak perlu belajar","Agar tidak terlambat sekolah","Agar bisa bermain sepanjang hari"],k:1},
+ {t:"Apa akibat jika sering bangun kesiangan?",o:["Lebih disiplin","Selalu tepat waktu","Terburu-buru dan terlambat"],k:2},
+ {t:"Apa yang baik diminum setelah bangun tidur?",o:["Segelas air putih","Es krim","Minuman bersoda"],k:0},
+ {t:"Mengapa sarapan penting di pagi hari?",o:["Agar cepat mengantuk","Memberi energi untuk beraktivitas","Agar tidak perlu makan siang"],k:1},
+ {t:"Apa yang membantu kita mudah bangun pagi?",o:["Tidur larut malam","Menunda alarm berkali-kali","Tidur lebih awal"],k:2},
+ {t:"Kegiatan apa yang baik dilakukan di pagi hari?",o:["Berolahraga ringan","Tidur lagi","Menonton sampai larut"],k:0}
+];
+var LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+var SH=['<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 30 28H2z"/></svg>','<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 1 31 16 16 31 1 16z"/></svg>','<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13"/></svg>'];
+var KEYS={X:["a","s","d"],O:["j","k","l"]};
+var LV=[{n:"Mudah",acc:.4,d:[5000,9000],sm:0},{n:"Sedang",acc:.65,d:[3000,7000],sm:1},{n:"Sulit",acc:.85,d:[2000,5000],sm:2}];
+var BATAS=15,T={},S={mode:"duo",lvl:1,phase:"menu"};
+var $=function(i){return document.getElementById(i)},app=$("app");
+function rnd(a,b){return a+Math.floor(Math.random()*(b-a+1))}
+function shuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=rnd(0,i),t=a[i];a[i]=a[j];a[j]=t}return a}
+function nm(p){return S.mode==="bot"?(p==="X"?"Kamu":"Bot"):(p==="X"?"Pemain 1":"Pemain 2")}
+function clr(){clearInterval(T.i);clearTimeout(T.b);clearTimeout(T.n)}
+
+/* ---------- menu & modal ---------- */
+function menu(){
+  clr();closeModal();S.phase="menu";S.paused=false;
+  var ch="";LV.forEach(function(l,i){ch+='<button data-l="'+i+'" aria-pressed="'+(S.lvl===i)+'">'+l.n+'</button>'});
+  app.innerHTML='<div class="center"><div class="sun rise"></div><h1>TIC TAC QUIZ</h1>'+
+   '<p class="muted">Jawab pertanyaan bangun pagi paling cepat, rebut token, dan susun 3 segaris!</p>'+
+   '<div class="menu"><button class="btn main" id="b2">2 Pemain</button><button class="btn main" id="bb">Lawan Bot</button>'+
+   '<div class="lvl" role="group" aria-label="Tingkat bot">Tingkat bot: '+ch+'</div><button class="btn alt" id="bh">Cara main</button></div></div>';
+  $("b2").onclick=function(){start("duo")};
+  $("bb").onclick=function(){start("bot")};
+  $("bh").onclick=function(){rules(closeModal,"Tutup")};
+  document.querySelectorAll(".lvl button").forEach(function(b){b.onclick=function(){S.lvl=+b.dataset.l;menu()}});
+}
+function modal(h){var m=$("modal");m.innerHTML='<div class="mc" role="dialog" aria-modal="true">'+h+'</div>';m.hidden=false}
+function closeModal(){var m=$("modal");m.hidden=true;m.innerHTML=""}
+function rules(back,label){
+  modal('<h2>Cara main</h2><ol>'+
+   '<li>Pilih <b>2 Pemain</b> (satu layar) atau <b>Lawan Bot</b>.</li>'+
+   '<li>Tiap ronde muncul satu pertanyaan. Siapa yang <b>pertama menjawab benar</b> boleh menaruh token (X atau O) di papan.</li>'+
+   '<li>Jawaban salah mengunci pemain itu di pertanyaan tersebut, lawan masih bisa menjawab. Jika waktu habis atau keduanya salah, pertanyaan diganti.</li>'+
+   '<li>Susun <b>3 token segaris</b> (mendatar, menurun, atau silang) untuk menang. Papan penuh tanpa pemenang berarti seri.</li>'+
+   '<li>Kontrol keyboard: Pemain 1 (X) tekan <b>A S D</b>, Pemain 2 (O) tekan <b>J K L</b>. Bisa juga klik atau sentuh tombol jawaban.</li>'+
+   '<li>Tombol <b>Menu</b> di kanan atas (atau tombol Esc) menjeda permainan.</li></ol>'+
+   '<div class="menu"><button class="btn main" id="rb">'+label+'</button></div>');
+  $("rb").onclick=back;
+}
+function pause(){if(S.phase==="menu"||S.paused)return;S.paused=true;clr();showPause()}
+function showPause(){
+  modal('<h2>Permainan dijeda</h2><div class="menu" style="margin-top:0"><button class="btn main" id="rs">Lanjutkan</button><button class="btn alt" id="hp">Cara main</button><button class="btn alt" id="rt">Mulai ulang</button><button class="btn stop" id="sp">Berhenti game</button></div>');
+  $("rs").onclick=resume;$("hp").onclick=function(){rules(showPause,"Kembali")};
+  $("rt").onclick=function(){closeModal();start(S.mode)};$("sp").onclick=menu;
+}
+function resume(){
+  closeModal();S.paused=false;
+  if(S.phase==="q"){runTimer();botSched()}
+  else if(S.phase==="place"&&S.mode==="bot"&&S.who==="O")T.b=setTimeout(botPlace,800);
+  else if(S.phase==="inter")nextQ();
+}
+
+/* ---------- alur permainan ---------- */
+function start(mode){
+  clr();closeModal();S.mode=mode;S.board=Array(9).fill("");S.qs=shuf(Q);S.qi=0;S.n=0;S.win=null;S.paused=false;nextQ();
+}
+function nextQ(){
+  clr();
+  if(S.qi>=S.qs.length){S.qs=shuf(Q);S.qi=0}
+  var q=S.qs[S.qi++];
+  S.q={t:q.t,o:shuf(q.o.map(function(t,i){return{t:t,ok:i===q.k}}))};
+  S.phase="q";S.lock={X:false,O:false};S.bad={};S.who=null;S.rem=BATAS;S.n++;
+  render();runTimer();botSched();
+}
+function runTimer(){
+  var t0=Date.now(),r0=S.rem;clearInterval(T.i);
+  T.i=setInterval(function(){
+    S.rem=Math.max(0,r0-(Date.now()-t0)/1000);
+    var b=$("tb");if(b){b.style.transform="scaleX("+S.rem/BATAS+")";b.parentNode.className="timer"+(S.rem<4?" low":"")}
+    if(S.rem<=0)noWin("Waktu habis. Tidak ada yang menjawab benar.");
+  },100);
+}
+function botSched(){
+  clearTimeout(T.b);
+  if(S.mode!=="bot"||S.phase!=="q"||S.lock.O)return;
+  var L=LV[S.lvl];
+  T.b=setTimeout(function(){
+    var ok=S.q.o.findIndex(function(o){return o.ok}),j=ok;
+    if(Math.random()>=L.acc){var w=[0,1,2].filter(function(x){return x!==ok});j=w[rnd(0,1)]}
+    answer("O",j);
+  },rnd(L.d[0],L.d[1]));
+}
+function answer(p,j){
+  if(S.phase!=="q"||S.lock[p]||S.paused)return;
+  if(S.q.o[j].ok){
+    clr();S.phase="place";S.who=p;render();
+    if(S.mode==="bot"&&p==="O")T.b=setTimeout(botPlace,1000);
+  }else{
+    S.lock[p]=true;S.bad[p]=j;
+    if(S.lock.X&&S.lock.O){noWin("Dua-duanya salah. Pertanyaan berikutnya!");return}
+    render();
+  }
+}
+function noWin(msg){clr();S.phase="inter";S.msg=msg;render();T.n=setTimeout(nextQ,1800)}
+function place(i){
+  if(S.phase!=="place"||S.board[i]||S.paused||(S.mode==="bot"&&S.who==="O"))return;
+  put(i);
+}
+function put(i){
+  S.board[i]=S.who;
+  var b=S.board;
+  for(var k=0;k<8;k++){var l=LINES[k];if(b[l[0]]&&b[l[0]]===b[l[1]]&&b[l[1]]===b[l[2]]){S.win=l;S.phase="end";render();return}}
+  if(b.indexOf("")<0){S.phase="end";render();return}
+  nextQ();
+}
+function botPlace(){
+  var b=S.board,e=[],L=LV[S.lvl],c=null;
+  b.forEach(function(v,i){if(!v)e.push(i)});
+  function find(m){
+    for(var k=0;k<8;k++){var l=LINES[k],v=l.map(function(i){return b[i]});
+      if(v.filter(function(x){return x===m}).length===2&&v.indexOf("")>=0)return l[v.indexOf("")]}
+    return null;
+  }
+  if(L.sm>=1){c=find("O");if(c===null)c=find("X")}
+  if(c===null&&L.sm>=2){
+    if(!b[4])c=4;else{var cs=[0,2,6,8].filter(function(i){return !b[i]});if(cs.length)c=cs[rnd(0,cs.length-1)]}
+  }
+  if(c===null)c=e[rnd(0,e.length-1)];
+  put(c);
+}
+
+/* ---------- tampilan ---------- */
+function result(){return S.win?nm(S.board[S.win[0]])+" ("+S.board[S.win[0]]+") menang!":"Seri! Papan sudah penuh."}
+function cell(i){
+  var v=S.board[i],w=S.win&&S.win.indexOf(i)>=0,can=S.phase==="place"&&!v&&!(S.mode==="bot"&&S.who==="O");
+  return '<button class="cell'+(v?" "+v:"")+(w?" w":"")+(can?" can":"")+'" data-i="'+i+'"'+(can?"":" disabled")+' aria-label="Kotak '+(i+1)+(v?", "+v:", kosong")+'">'+v+'</button>';
+}
+function pan(p){
+  var l=S.lock[p],bot=S.mode==="bot"&&p==="O",act=!l&&!bot;
+  var h='<div class="pan '+p+(l?" lk":"")+'"><h3><span class="tk">'+p+'</span>'+nm(p)+(l?" · terkunci":"")+'</h3>';
+  S.q.o.forEach(function(o,j){
+    h+='<button class="ans" data-p="'+p+'" data-j="'+j+'"'+(act?"":" disabled")+(S.bad[p]===j?" data-bad":"")+'>'+SH[j]+'<span>'+o.t+'</span>'+(bot?"":"<kbd>"+KEYS[p][j].toUpperCase()+"</kbd>")+'</button>';
+  });
+  return h+'</div>';
+}
+function side(){
+  var p=S.phase;
+  if(p==="q")return '<p class="msg">Siapa tercepat menjawab benar, dapat token!</p><div class="pans">'+pan("X")+pan("O")+'</div>';
+  if(p==="place"){var bot=S.mode==="bot"&&S.who==="O";
+    return '<div class="ban '+S.who+'"><b>'+nm(S.who)+' ('+S.who+')</b> menjawab benar!<small>'+(bot?"Bot sedang memilih kotak...":"Pilih kotak kosong di papan.")+'</small></div>'}
+  if(p==="inter")return '<div class="ban nb">'+S.msg+'</div>';
+  return '<div class="ban '+(S.win?S.board[S.win[0]]:"nb")+'"><b>'+result()+'</b></div><div class="menu"><button class="btn main" id="ag">Main lagi</button><button class="btn alt" id="mm">Menu utama</button></div>';
+}
+function render(){
+  var h='<div class="bar"><span class="chip">Pertanyaan '+S.n+'</span><button class="mbtn" id="mn" aria-label="Menu dan jeda"><span class="bars"></span>Menu</button></div>'+
+   '<div class="timer'+(S.rem<4?" low":"")+'"><i id="tb" style="transform:scaleX('+S.rem/BATAS+')"></i></div><div class="q" id="qt"></div>'+
+   '<div class="play"><div class="board">';
+  for(var i=0;i<9;i++)h+=cell(i);
+  app.innerHTML=h+'</div><div class="side">'+side()+'</div></div>';
+  $("qt").textContent=S.phase==="end"?result():S.q.t;
+  $("mn").onclick=pause;
+  document.querySelectorAll(".ans").forEach(function(b){b.onclick=function(){answer(b.dataset.p,+b.dataset.j)}});
+  document.querySelectorAll(".cell").forEach(function(b){b.onclick=function(){place(+b.dataset.i)}});
+  if($("ag")){$("ag").onclick=function(){start(S.mode)};$("mm").onclick=menu}
+}
+document.addEventListener("keydown",function(e){
+  var k=e.key.toLowerCase();
+  if(k==="escape"){if(S.phase!=="menu"){S.paused?resume():pause()}return}
+  if(S.phase!=="q"||S.paused)return;
+  ["X","O"].forEach(function(p){
+    var j=KEYS[p].indexOf(k);
+    if(j>=0&&!(S.mode==="bot"&&p==="O"))answer(p,j);
+  });
+});
+menu();
+</script>
+</body>
+</html>
